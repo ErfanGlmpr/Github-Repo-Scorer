@@ -40,9 +40,7 @@ export class ScoringService {
     const recency = Math.exp(-recencyDecay * Math.max(0, daysSinceUpdate));
     const recencyComponent = weights.recency * recency;
 
-    return Number(
-      (starsComponent + forksComponent + recencyComponent).toFixed(4),
-    );
+    return starsComponent + forksComponent + recencyComponent;
   }
 
   /**
@@ -67,7 +65,7 @@ export class ScoringService {
           stars: repo.stars,
           forks: repo.forks,
           updatedAt: repo.updatedAt.toISOString(),
-          score: this.calculateScore(repo, now),
+          score: Number(this.calculateScore(repo, now).toFixed(2)),
         });
       } catch (error) {
         this.logger.warn({

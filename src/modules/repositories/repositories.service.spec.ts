@@ -131,6 +131,23 @@ describe('RepositoriesService', () => {
       );
     });
 
+    it('should return empty array when GitHub returns no results', async () => {
+      githubService.searchRepositories.mockResolvedValue({
+        total_count: 0,
+        incomplete_results: false,
+        items: [],
+      });
+
+      const results = await service.findRepositories(
+        'typescript',
+        '2024-01-01',
+        1,
+        20,
+      );
+
+      expect(results).toEqual([]);
+    });
+
     it('should propagate GitHub API errors', async () => {
       githubService.searchRepositories.mockRejectedValue(
         new Error('GitHub API failed'),

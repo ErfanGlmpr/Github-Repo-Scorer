@@ -43,10 +43,7 @@ export class RepositoriesController {
   async searchRepositories(
     @Query() query: SearchRepositoriesDto,
   ): Promise<RepositoryResponseDto[]> {
-    this.logger.log({
-      message: 'Incoming search repositories request',
-      query,
-    });
+    this.logger.log('Incoming search repositories request', { query });
     return this.repositoriesService.findRepositories(
       query.language,
       query.created_after,
