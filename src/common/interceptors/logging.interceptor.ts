@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   CallHandler,
   Logger,
+  HttpException,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -37,9 +38,21 @@ export class LoggingInterceptor implements NestInterceptor {
           const duration = Date.now() - startTime;
           const message =
             error instanceof Error ? error.message : 'Unknown error';
-          this.logger.warn(`← ${method} ${url} ERROR`, {
+
+          let statusCode = 500;
+          if (error instanceof HttpException) {
+            statusCode = error.getStatus();
+          } else if (error instanceof Object && 'status' in error) {
+            const potentialStatus = (error as { status: unknown }).status;
+            if (typeof potentialStatus === 'number') {
+              statusCode = potentialStatus;
+            }
+          }
+
+          this.logger.error(`← ${method} ${url} ERROR`, {
             durationMs: duration,
             error: message,
+            statusCode,
           });
         },
       }),

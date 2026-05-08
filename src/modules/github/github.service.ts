@@ -111,7 +111,7 @@ export class GithubService {
 
     if (remaining !== undefined && remaining !== null) {
       this.logger.log('GitHub API rate limit status', {
-        limit: limit ? Number(limit) : undefined,
+        rateLimit: limit ? Number(limit) : undefined,
         remainingRequests: Number(remaining),
         reset: reset ? new Date(Number(reset) * 1000).toISOString() : 'unknown',
       });
@@ -142,7 +142,8 @@ export class GithubService {
         this.logger.error({
           message: 'Network error contacting GitHub API',
           error: error.message,
-          code: error.code,
+          statusCode: HttpStatus.SERVICE_UNAVAILABLE,
+          operation: 'githubRequest',
         });
         return new HttpException(
           'Unable to reach the GitHub API. Please try again later.',
@@ -163,8 +164,8 @@ export class GithubService {
           const rateLimitHeaders = headers as Record<string, unknown>;
           this.logger.warn({
             message: 'GitHub API rate limit exceeded',
-            status,
-            remaining: rateLimitHeaders['x-ratelimit-remaining'],
+            statusCode: status,
+            remainingRequests: rateLimitHeaders['x-ratelimit-remaining'],
           });
           return new HttpException(
             'GitHub API rate limit exceeded. Please try again later or configure a GITHUB_TOKEN.',
@@ -176,10 +177,11 @@ export class GithubService {
           const rawMessage = data?.message;
           const errorMessage =
             typeof rawMessage === 'string' ? rawMessage : 'Validation failed';
-          this.logger.warn({
+          this.logger.error({
             message: 'GitHub API rejected query (422)',
             error: errorMessage,
-            status,
+            statusCode: status,
+            operation: 'githubSearch',
           });
           return new HttpException(
             `GitHub API rejected the query: ${errorMessage}`,
@@ -187,10 +189,11 @@ export class GithubService {
           );
         }
 
-        this.logger.warn({
+        this.logger.error({
           message: 'GitHub API client error',
-          status,
-          data,
+          statusCode: status,
+          error: data?.message || 'Client error',
+          operation: 'githubRequest',
         });
         return new HttpException(
           `GitHub API request failed with status ${status}`,
@@ -202,8 +205,9 @@ export class GithubService {
       if (status >= 500) {
         this.logger.error({
           message: 'GitHub API server error',
-          status,
-          data,
+          statusCode: status,
+          error: data?.message || 'Server error',
+          operation: 'githubRequest',
         });
         return new HttpException(
           `GitHub API returned a server error (status ${status})`,
@@ -213,8 +217,9 @@ export class GithubService {
 
       this.logger.error({
         message: 'Unexpected GitHub API response',
-        status,
-        data,
+        statusCode: status,
+        error: data?.message || 'Unexpected response',
+        operation: 'githubRequest',
       });
       return new HttpException(
         `GitHub API returned an error (status ${status})`,
@@ -229,7 +234,9 @@ export class GithubService {
 
     this.logger.error({
       message: 'Unexpected error in GithubService',
-      error: error instanceof Error ? error.stack : String(error),
+      error: error instanceof Error ? error.message : String(error),
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      operation: 'githubServiceInternal',
     });
     return new HttpException(
       'An unexpected error occurred',
