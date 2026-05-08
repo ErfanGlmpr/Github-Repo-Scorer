@@ -71,6 +71,7 @@ export class ScoringService {
         this.logger.error({
           message: `Skipping repo "${repo.fullName}" due to scoring error`,
           error: error instanceof Error ? error.message : String(error),
+          operation: 'scoring',
         });
       }
     }

@@ -43,12 +43,18 @@ export class RepositoriesController {
   async searchRepositories(
     @Query() query: SearchRepositoriesDto,
   ): Promise<RepositoryResponseDto[]> {
-    this.logger.log('Incoming search repositories request', { query });
-    return this.repositoriesService.findRepositories(
+    this.logger.log('Incoming search repositories request', {
+      language: query.language,
+      createdAfter: query.created_after,
+      page: query.page,
+      limit: query.limit,
+    });
+    const results = await this.repositoriesService.findRepositories(
       query.language,
       query.created_after,
       query.page,
       query.limit,
     );
+    return results.sort((a, b) => b.score - a.score);
   }
 }

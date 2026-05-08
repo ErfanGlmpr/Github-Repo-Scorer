@@ -38,10 +38,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       message = { message: 'Internal server error' };
 
       // Log the full error for debugging; never expose it to the client.
-      this.logger.error(
-        'Unhandled exception',
-        exception instanceof Error ? exception.stack : String(exception),
-      );
+      this.logger.error('Unhandled exception', {
+        error:
+          exception instanceof Error ? exception.message : String(exception),
+        statusCode: status,
+        operation: 'GlobalExceptionFilter',
+      });
     }
 
     response.status(status).json({
