@@ -48,8 +48,7 @@ export class RepositoriesService {
     const safeLimit = Math.min(Math.max(1, limit), 100);
 
     // ─── Fetch & transform ─────────────────────────────────────
-    this.logger.log({
-      message: 'Searching repositories',
+    this.logger.log('Searching repositories', {
       language,
       createdAfter,
       page: safePage,
@@ -66,8 +65,7 @@ export class RepositoriesService {
     );
 
     const fetchDuration = Date.now() - startTime;
-    this.logger.log({
-      message: 'GitHub search completed',
+    this.logger.log('GitHub search completed', {
       itemCount: searchResult.items.length,
       totalCount: searchResult.total_count,
       durationMs: fetchDuration,

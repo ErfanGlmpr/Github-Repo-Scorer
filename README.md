@@ -34,6 +34,7 @@ A production-ready NestJS backend service that fetches repositories from the Git
 ## Getting Started
 
 ### Prerequisites
+⏱ Setup time: under 2 minutes
 
 - **Node.js** >= 18
 - **npm** >= 9
@@ -57,7 +58,7 @@ cp .env.example .env
 | Variable       | Required | Default | Description                                    |
 | -------------- | -------- | ------- | ---------------------------------------------- |
 | `GITHUB_TOKEN` | No       | —       | GitHub PAT for higher rate limits (5000 req/h)  |
-| `PORT`         | No       | `4000`  | Port the application listens on                |
+| `PORT`         | No       | `3000`  | Port the application listens on                |
 
 > **Tip:** Without a `GITHUB_TOKEN`, GitHub limits you to 10 requests/minute. Generate a token at [github.com/settings/tokens](https://github.com/settings/tokens).
 
@@ -72,7 +73,7 @@ npm run build
 npm run start:prod
 ```
 
-The API will be available at `http://localhost:4000`.
+The API will be available at `http://localhost:3000`.
 
 ### Running with Docker
 
@@ -132,7 +133,7 @@ GET /repositories?language=typescript&created_after=2024-01-01&page=1&limit=10
 #### Example cURL
 
 ```bash
-curl "http://localhost:4000/repositories?language=typescript&created_after=2024-01-01&page=1&limit=5"
+curl "http://localhost:3000/repositories?language=typescript&created_after=2024-01-01&page=1&limit=5"
 ```
 
 ### Health Check

@@ -29,10 +29,13 @@ export class GithubService {
     if (token) {
       this.httpService.axiosRef.defaults.headers.common['Authorization'] =
         `Bearer ${token}`;
-      this.logger.log('GitHub token configured — higher rate limits enabled');
+      this.logger.log('GitHub token configured — higher rate limits enabled', {
+        authenticated: true,
+      });
     } else {
       this.logger.warn(
         'No GITHUB_TOKEN found — using unauthenticated rate limits (60 req/h)',
+        { authenticated: false },
       );
     }
   }
@@ -102,13 +105,14 @@ export class GithubService {
    * Log GitHub rate limit status from headers if available.
    */
   private logRateLimits(headers: Record<string, unknown>): void {
+    const limit = headers['x-ratelimit-limit'];
     const remaining = headers['x-ratelimit-remaining'];
     const reset = headers['x-ratelimit-reset'];
 
     if (remaining !== undefined && remaining !== null) {
-      this.logger.debug({
-        message: 'GitHub rate limit status',
-        remaining: Number(remaining),
+      this.logger.log('GitHub API rate limit status', {
+        limit: limit ? Number(limit) : undefined,
+        remainingRequests: Number(remaining),
         reset: reset ? new Date(Number(reset) * 1000).toISOString() : 'unknown',
       });
     }

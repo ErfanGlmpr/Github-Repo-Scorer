@@ -25,24 +25,22 @@ export class LoggingInterceptor implements NestInterceptor {
     const { method, url, query } = request;
     const startTime = Date.now();
 
-    const queryString =
-      Object.keys(query).length > 0 ? ` params=${JSON.stringify(query)}` : '';
-
-    this.logger.log(`→ ${method} ${url}${queryString}`);
+    this.logger.log(`→ ${method} ${url}`, { params: query });
 
     return next.handle().pipe(
       tap({
         next: () => {
           const duration = Date.now() - startTime;
-          this.logger.log(`← ${method} ${url} ${duration}ms`);
+          this.logger.log(`← ${method} ${url}`, { durationMs: duration });
         },
         error: (error: unknown) => {
           const duration = Date.now() - startTime;
           const message =
             error instanceof Error ? error.message : 'Unknown error';
-          this.logger.warn(
-            `← ${method} ${url} ${duration}ms ERROR: ${message}`,
-          );
+          this.logger.warn(`← ${method} ${url} ERROR`, {
+            durationMs: duration,
+            error: message,
+          });
         },
       }),
     );
