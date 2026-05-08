@@ -1,7 +1,12 @@
-import { Controller, Get, Query, UseInterceptors, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  UseInterceptors,
+  Logger,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
-import { SkipThrottle } from '@nestjs/throttler';
 import { RepositoriesService } from './repositories.service';
 import { SearchRepositoriesDto } from './dto/search-repositories.dto';
 import { RepositoryResponseDto } from './dto/repository-response.dto';
@@ -29,7 +34,10 @@ export class RepositoriesController {
     type: [RepositoryResponseDto],
   })
   @ApiResponse({ status: 400, description: 'Invalid query parameters' })
-  @ApiResponse({ status: 429, description: 'Rate limit exceeded (GitHub API or application throttle)' })
+  @ApiResponse({
+    status: 429,
+    description: 'Rate limit exceeded (GitHub API or application throttle)',
+  })
   @ApiResponse({ status: 502, description: 'GitHub API error' })
   @ApiResponse({ status: 503, description: 'GitHub API unreachable' })
   async searchRepositories(

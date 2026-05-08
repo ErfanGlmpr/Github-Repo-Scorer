@@ -158,7 +158,10 @@ describe('GithubService', () => {
           status: 403,
           statusText: 'Forbidden',
           data: { message: 'API rate limit exceeded' },
-          headers: { 'x-ratelimit-remaining': '0', 'x-ratelimit-reset': '1609459200' },
+          headers: {
+            'x-ratelimit-remaining': '0',
+            'x-ratelimit-reset': '1609459200',
+          },
           config: { headers: new AxiosHeaders() } as InternalAxiosRequestConfig,
         },
       );
@@ -169,10 +172,11 @@ describe('GithubService', () => {
 
       try {
         await service.searchRepositories('typescript', '2024-01-01');
-      } catch (error: any) {
+      } catch (error: unknown) {
         expect(error).toBeInstanceOf(HttpException);
-        expect(error.getStatus()).toBe(HttpStatus.TOO_MANY_REQUESTS);
-        expect(error.getResponse()).toContain('rate limit exceeded');
+        const httpError = error as HttpException;
+        expect(httpError.getStatus()).toBe(HttpStatus.TOO_MANY_REQUESTS);
+        expect(httpError.getResponse()).toContain('rate limit exceeded');
       }
     });
 

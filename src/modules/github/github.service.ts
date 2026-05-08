@@ -101,11 +101,11 @@ export class GithubService {
   /**
    * Log GitHub rate limit status from headers if available.
    */
-  private logRateLimits(headers: any): void {
+  private logRateLimits(headers: Record<string, unknown>): void {
     const remaining = headers['x-ratelimit-remaining'];
     const reset = headers['x-ratelimit-reset'];
 
-    if (remaining !== undefined) {
+    if (remaining !== undefined && remaining !== null) {
       this.logger.debug({
         message: 'GitHub rate limit status',
         remaining: Number(remaining),
@@ -156,10 +156,11 @@ export class GithubService {
       // 4xx Client Errors
       if (status >= 400 && status < 500) {
         if (status === 403) {
+          const rateLimitHeaders = headers as Record<string, unknown>;
           this.logger.warn({
             message: 'GitHub API rate limit exceeded',
             status,
-            remaining: headers['x-ratelimit-remaining'],
+            remaining: rateLimitHeaders['x-ratelimit-remaining'],
           });
           return new HttpException(
             'GitHub API rate limit exceeded. Please try again later or configure a GITHUB_TOKEN.',

@@ -101,7 +101,7 @@ describe('ScoringService', () => {
       const repo = makeRepo({ updatedAt: futureDate });
       const score = service.calculateScore(repo, NOW);
 
-      const { weights, recencyDecay } = SCORING_CONFIG;
+      const { weights } = SCORING_CONFIG;
       const expected =
         weights.stars * Math.log(1 + repo.stars) +
         weights.forks * Math.log(1 + repo.forks) +

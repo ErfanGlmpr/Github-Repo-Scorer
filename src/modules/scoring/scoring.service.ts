@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { GithubRepository } from '../../common/interfaces/github-repository.interface';
 import { Repository } from '../../common/mappers/repository.mapper';
 import { SCORING_CONFIG } from './scoring.config';
 
@@ -37,11 +36,8 @@ export class ScoringService {
     const starsComponent = weights.stars * Math.log(1 + repo.stars);
     const forksComponent = weights.forks * Math.log(1 + repo.forks);
 
-    const daysSinceUpdate =
-      (now - repo.updatedAt.getTime()) / msPerDay;
-    const recency = Math.exp(
-      -recencyDecay * Math.max(0, daysSinceUpdate),
-    );
+    const daysSinceUpdate = (now - repo.updatedAt.getTime()) / msPerDay;
+    const recency = Math.exp(-recencyDecay * Math.max(0, daysSinceUpdate));
     const recencyComponent = weights.recency * recency;
 
     return Number(
@@ -74,9 +70,10 @@ export class ScoringService {
           score: this.calculateScore(repo, now),
         });
       } catch (error) {
-        this.logger.warn(
-          { message: `Skipping repo "${repo.fullName}" due to scoring error`, error: error instanceof Error ? error.message : String(error) }
-        );
+        this.logger.warn({
+          message: `Skipping repo "${repo.fullName}" due to scoring error`,
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 

@@ -8,7 +8,6 @@ import { GithubSearchResponse } from '../../common/interfaces/github-repository.
 describe('RepositoriesService', () => {
   let service: RepositoriesService;
   let githubService: jest.Mocked<Pick<GithubService, 'searchRepositories'>>;
-  let scoringService: ScoringService;
 
   const mockGithubResponse: GithubSearchResponse = {
     total_count: 2,
@@ -57,7 +56,6 @@ describe('RepositoriesService', () => {
 
     service = module.get<RepositoriesService>(RepositoriesService);
     githubService = module.get(GithubService);
-    scoringService = module.get<ScoringService>(ScoringService);
   });
 
   describe('findRepositories', () => {

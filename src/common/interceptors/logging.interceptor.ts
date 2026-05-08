@@ -40,7 +40,9 @@ export class LoggingInterceptor implements NestInterceptor {
           const duration = Date.now() - startTime;
           const message =
             error instanceof Error ? error.message : 'Unknown error';
-          this.logger.warn(`← ${method} ${url} ${duration}ms ERROR: ${message}`);
+          this.logger.warn(
+            `← ${method} ${url} ${duration}ms ERROR: ${message}`,
+          );
         },
       }),
     );

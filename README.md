@@ -42,7 +42,7 @@ A production-ready NestJS backend service that fetches repositories from the Git
 
 ```bash
 # Clone the repository
-git clone <repo-url>
+git clone https://github.com/ErfanGlmpr/Github-Repo-Scorer.git
 cd Github-Repo-Scorer
 
 # Install dependencies
