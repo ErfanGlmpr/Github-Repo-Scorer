@@ -1,0 +1,9 @@
+services:
+  api:
+    build: .
+    container_name: github-repo-scorer
+    ports:
+      - "4000:3000"
+    env_file:
+      - .env
+    restart: always
