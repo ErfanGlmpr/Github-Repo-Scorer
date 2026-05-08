@@ -23,7 +23,10 @@ describe('Repositories API (e2e)', () => {
         transform: true,
       }),
     );
-    app.useGlobalInterceptors(new LoggingInterceptor(), new TransformInterceptor());
+    app.useGlobalInterceptors(
+      new LoggingInterceptor(),
+      new TransformInterceptor(),
+    );
     app.useGlobalFilters(new GlobalExceptionFilter());
     await app.init();
   });
@@ -38,8 +41,11 @@ describe('Repositories API (e2e)', () => {
         .get('/health')
         .expect(200)
         .expect((res) => {
-          expect(res.body.data.status).toBe('ok');
-          expect(res.body.data.timestamp).toBeDefined();
+          const body = res.body as {
+            data: { status: string; timestamp: string };
+          };
+          expect(body.data.status).toBe('ok');
+          expect(body.data.timestamp).toBeDefined();
         });
     });
   });
@@ -81,12 +87,15 @@ describe('Repositories API (e2e)', () => {
 
     it('should return 200 and mapped fields for a valid request', async () => {
       const response = await request(app.getHttpServer())
-        .get('/repositories?language=typescript&created_after=2024-01-01&limit=1')
+        .get(
+          '/repositories?language=typescript&created_after=2024-01-01&limit=1',
+        )
         .expect(200);
 
-      const items = response.body.data;
+      const body = response.body as { data: any[] };
+      const items = body.data;
       if (items.length > 0) {
-        const item = items[0];
+        const item = items[0] as Record<string, any>;
         expect(item).toHaveProperty('fullName');
         expect(item).toHaveProperty('url');
         expect(item).toHaveProperty('stars');
