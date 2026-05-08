@@ -178,17 +178,30 @@ This ensures that a project updated within the last 2 weeks remains highly compe
 
 ---
 
+## Infrastructure & Caching
+
+### Caching Strategy
+Caching is implemented **in-memory** using `cache-manager` for simplicity and performance in a single-instance deployment.
+*   **TTL:** 5 minutes (300,000ms)
+*   **Scope:** Applied to the `GET /repositories` endpoint.
+
+> [!NOTE]
+> In a horizontally scaled production environment, this in-memory implementation would be replaced with a **distributed cache** (e.g., Redis) to ensure cache consistency across all application nodes.
+
+---
+
 ## Scripts Reference
 
-| Script             | Description                       |
-| ------------------ | --------------------------------- |
-| `npm run start:dev`| Start in watch mode (development) |
-| `npm run build`    | Compile TypeScript to JavaScript  |
-| `npm run start:prod`| Start the production build       |
-| `npm test`         | Run unit tests                    |
-| `npm run test:cov` | Run tests with coverage report    |
-| `npm run lint`     | Lint and auto-fix with ESLint     |
-| `npm run format`   | Format code with Prettier         |
+| Script             | Description                            |
+| ------------------ | -------------------------------------- |
+| `npm run start:dev`| Start in watch mode (development)      |
+| `npm run build`    | Compile TypeScript to JavaScript       |
+| `npm run start:prod`| Start the production build            |
+| `npm run test`     | Run unit tests                         |
+| `npm run test:e2e` | Run end-to-end tests                   |
+| `npm run test:cov` | Run tests with coverage report         |
+| `npm run lint`     | Lint and auto-fix with ESLint          |
+| `npm run format`   | Format code with Prettier              |
 
 ---
 
