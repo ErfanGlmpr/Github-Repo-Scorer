@@ -43,16 +43,12 @@ export class RepositoriesService {
       );
     }
 
-    // Enforce upper bound even if DTO validation is bypassed
-    const safePage = Math.max(1, page);
-    const safeLimit = Math.min(Math.max(1, limit), 100);
-
     // ─── Fetch & transform ─────────────────────────────────────
     this.logger.log('Searching repositories', {
       language,
       createdAfter,
-      page: safePage,
-      limit: safeLimit,
+      page,
+      limit,
     });
 
     const startTime = Date.now();
@@ -60,8 +56,8 @@ export class RepositoriesService {
     const searchResult = await this.githubService.searchRepositories(
       language,
       createdAfter,
-      safePage,
-      safeLimit,
+      page,
+      limit,
     );
 
     const fetchDuration = Date.now() - startTime;

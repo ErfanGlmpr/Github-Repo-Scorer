@@ -68,7 +68,7 @@ export class ScoringService {
           score: Number(this.calculateScore(repo, now).toFixed(2)),
         });
       } catch (error) {
-        this.logger.warn({
+        this.logger.error({
           message: `Skipping repo "${repo.fullName}" due to scoring error`,
           error: error instanceof Error ? error.message : String(error),
         });

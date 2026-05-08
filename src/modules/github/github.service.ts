@@ -176,7 +176,7 @@ export class GithubService {
           const rawMessage = data?.message;
           const errorMessage =
             typeof rawMessage === 'string' ? rawMessage : 'Validation failed';
-          this.logger.warn({
+          this.logger.error({
             message: 'GitHub API rejected query (422)',
             error: errorMessage,
             status,
@@ -187,7 +187,7 @@ export class GithubService {
           );
         }
 
-        this.logger.warn({
+        this.logger.error({
           message: 'GitHub API client error',
           status,
           data,

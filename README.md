@@ -2,6 +2,8 @@
 
 A production-ready NestJS backend service that fetches repositories from the GitHub Search API and assigns each repository a **popularity score** based on stars, forks, and recency of updates.
 
+Follows a layered architecture: controller → service → domain → infrastructure.
+
 ## Features
 
 - 🔍 **GitHub Repository Search** — Search by programming language and creation date

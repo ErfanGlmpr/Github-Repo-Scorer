@@ -114,20 +114,20 @@ describe('RepositoriesService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should clamp limit to max 100', async () => {
+    it('should pass limit without clamping (handled by DTO/ValidationPipe)', async () => {
       githubService.searchRepositories.mockResolvedValue({
         total_count: 0,
         incomplete_results: false,
         items: [],
       });
 
-      await service.findRepositories('typescript', '2024-01-01', 1, 999);
+      await service.findRepositories('typescript', '2024-01-01', 1, 150);
 
       expect(githubService.searchRepositories).toHaveBeenCalledWith(
         'typescript',
         '2024-01-01',
         1,
-        100, // clamped
+        150, // no longer clamped at service level
       );
     });
 
