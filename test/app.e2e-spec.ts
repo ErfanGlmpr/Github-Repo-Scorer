@@ -85,25 +85,51 @@ describe('Repositories API (e2e)', () => {
         .expect(400);
     });
 
-    it('should return 200 and mapped fields for a valid request', async () => {
+    it('should return 200 with items and meta for a valid request', async () => {
       const response = await request(app.getHttpServer())
         .get(
-          '/repositories?language=typescript&created_after=2024-01-01&limit=1',
+          '/repositories?language=typescript&created_after=2024-01-01&limit=5',
         )
         .expect(200);
 
-      const body = response.body as { data: any[] };
-      const items = body.data;
+      const body = response.body as {
+        data: {
+          items: Record<string, unknown>[];
+          meta: Record<string, unknown>;
+        };
+      };
+
+      // Verify envelope shape
+      expect(body.data).toHaveProperty('items');
+      expect(body.data).toHaveProperty('meta');
+
+      // Verify meta fields
+      expect(body.data.meta).toHaveProperty('totalCount');
+      expect(body.data.meta).toHaveProperty('accessibleCount');
+      expect(body.data.meta).toHaveProperty('resultLimitReached');
+
+      // Verify item shape if results exist
+      const items = body.data.items;
       if (items.length > 0) {
-        const item = items[0] as Record<string, any>;
+        const item = items[0];
         expect(item).toHaveProperty('fullName');
         expect(item).toHaveProperty('url');
         expect(item).toHaveProperty('stars');
         expect(item).toHaveProperty('forks');
+        expect(item).toHaveProperty('createdAt');
         expect(item).toHaveProperty('updatedAt');
+        expect(item).toHaveProperty('score');
         expect(item).not.toHaveProperty('full_name');
         expect(item).not.toHaveProperty('stargazers_count');
       }
+    });
+
+    it('should return 400 when pagination exceeds 1000-result cap', () => {
+      return request(app.getHttpServer())
+        .get(
+          '/repositories?language=typescript&created_after=2024-01-01&page=51&limit=20',
+        )
+        .expect(400);
     });
   });
 });

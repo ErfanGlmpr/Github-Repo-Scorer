@@ -195,6 +195,7 @@ describe('ScoringService', () => {
       expect(scored[0]).toHaveProperty('url');
       expect(scored[0]).toHaveProperty('stars');
       expect(scored[0]).toHaveProperty('forks');
+      expect(scored[0]).toHaveProperty('createdAt');
       expect(scored[0]).toHaveProperty('updatedAt');
       expect(scored[0]).toHaveProperty('score');
       expect(typeof scored[0].score).toBe('number');

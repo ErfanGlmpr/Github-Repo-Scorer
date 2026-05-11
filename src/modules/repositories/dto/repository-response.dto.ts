@@ -21,6 +21,9 @@ export class RepositoryResponseDto {
   @ApiProperty({ example: 28000 })
   forks!: number;
 
+  @ApiProperty({ example: '2024-01-01T00:00:00Z' })
+  createdAt!: string;
+
   @ApiProperty({ example: '2024-12-01T10:00:00Z' })
   updatedAt!: string;
 

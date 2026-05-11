@@ -64,6 +64,7 @@ export class ScoringService {
           url: repo.url,
           stars: repo.stars,
           forks: repo.forks,
+          createdAt: repo.createdAt.toISOString(),
           updatedAt: repo.updatedAt.toISOString(),
           score: Number(this.calculateScore(repo, now).toFixed(2)),
         });
@@ -89,6 +90,7 @@ export interface ScoredResult {
   url: string;
   stars: number;
   forks: number;
+  createdAt: string;
   updatedAt: string;
   score: number;
 }
