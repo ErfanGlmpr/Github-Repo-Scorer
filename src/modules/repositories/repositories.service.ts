@@ -12,6 +12,7 @@ export interface SearchMeta {
   source?: string;
   stale?: boolean;
   warning?: string;
+  orderBy?: string;
 }
 
 export interface SearchResult {
@@ -27,7 +28,7 @@ export interface SearchResult {
  *  4. Slices the result window for the client
  *  5. Maps raw API data to domain models
  *  6. Enriches them with popularity scores
- *  7. Returns deterministically sorted results with metadata
+ *  7. Returns results in original GitHub order with metadata
  */
 @Injectable()
 export class RepositoriesService {
@@ -39,8 +40,8 @@ export class RepositoriesService {
   ) {}
 
   /**
-   * Search for repositories matching the given criteria and return
-   * them sorted by computed popularity score (descending).
+   * Search for repositories matching the given criteria.
+   * Preserves GitHub's original default ordering.
    */
   async findRepositories(
     language: string,
@@ -132,11 +133,6 @@ export class RepositoriesService {
     const domainRepos = sliced.map(mapToDomain);
     const scored = this.scoringService.scoreRepositories(domainRepos);
 
-    // ─── Deterministic sort with stable tie-breaker ────────────
-    scored.sort(
-      (a, b) => b.score - a.score || a.fullName.localeCompare(b.fullName),
-    );
-
     // ─── Build result metadata ─────────────────────────────────
     const totalCount = result1.data.total_count;
     const meta: SearchMeta = {
@@ -144,6 +140,7 @@ export class RepositoriesService {
       accessibleCount: Math.min(totalCount, 1000),
       resultLimitReached: totalCount > 1000,
       incompleteResults: result1.data.incomplete_results,
+      orderBy: 'github_best_match',
     };
 
     if (staleMeta?.stale) {

@@ -127,7 +127,7 @@ describe('GithubService', () => {
 
       const result = await service.fetchGithubPage(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1,
       );
 
@@ -143,7 +143,7 @@ describe('GithubService', () => {
 
       const result = await service.fetchGithubPage(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1,
       );
 
@@ -160,7 +160,7 @@ describe('GithubService', () => {
         .spyOn(httpService, 'get')
         .mockReturnValue(of(makeAxiosResponse(mockSearchResponse)));
 
-      await service.fetchGithubPage('TypeScript', '2024-01-01', 1);
+      await service.fetchGithubPage('TypeScript', '2026-01-01', 1);
 
       // Second call — same normalised query, same page
       // Simulate the cached data being available now
@@ -168,7 +168,7 @@ describe('GithubService', () => {
       const getSpy = jest.spyOn(httpService, 'get');
       getSpy.mockClear();
 
-      await service.fetchGithubPage('typescript', '2024-01-01', 1);
+      await service.fetchGithubPage('typescript', '2026-01-01', 1);
 
       expect(getSpy).not.toHaveBeenCalled();
     });
@@ -185,9 +185,9 @@ describe('GithubService', () => {
 
       // Fire 3 concurrent requests for the same page
       const [r1, r2, r3] = await Promise.all([
-        service.fetchGithubPage('typescript', '2024-01-01', 1),
-        service.fetchGithubPage('typescript', '2024-01-01', 1),
-        service.fetchGithubPage('typescript', '2024-01-01', 1),
+        service.fetchGithubPage('typescript', '2026-01-01', 1),
+        service.fetchGithubPage('typescript', '2026-01-01', 1),
+        service.fetchGithubPage('typescript', '2026-01-01', 1),
       ]);
 
       // All should return the same data
@@ -216,7 +216,7 @@ describe('GithubService', () => {
 
       const result = await service.fetchGithubPage(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1,
       );
 
@@ -235,7 +235,7 @@ describe('GithubService', () => {
 
       const result = await service.fetchGithubPage(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1,
       );
 
@@ -254,7 +254,7 @@ describe('GithubService', () => {
 
       const result = await service.fetchGithubPage(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1,
       );
 
@@ -273,7 +273,7 @@ describe('GithubService', () => {
 
       const result = await service.fetchGithubPage(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1,
       );
 
@@ -298,7 +298,7 @@ describe('GithubService', () => {
       // Since we set baseDelay=0, any delay > 0 proves retry-after was used
       const result = await service.fetchGithubPage(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1,
       );
 
@@ -314,7 +314,7 @@ describe('GithubService', () => {
         .mockReturnValue(throwError(() => error500));
 
       await expect(
-        service.fetchGithubPage('typescript', '2024-01-01', 1),
+        service.fetchGithubPage('typescript', '2026-01-01', 1),
       ).rejects.toThrow(GithubUnavailableError);
 
       // 1 initial + 3 retries = 4 total calls
@@ -347,7 +347,7 @@ describe('GithubService', () => {
 
       // First call exhausts retries and updates internal state
       await expect(
-        service.fetchGithubPage('typescript', '2024-01-01', 1),
+        service.fetchGithubPage('typescript', '2026-01-01', 1),
       ).rejects.toThrow(GithubRateLimitedError);
 
       // Second call should fail fast without any HTTP call
@@ -355,7 +355,7 @@ describe('GithubService', () => {
       getSpy.mockClear();
 
       await expect(
-        service.fetchGithubPage('typescript', '2024-01-01', 2),
+        service.fetchGithubPage('typescript', '2026-01-01', 2),
       ).rejects.toThrow(GithubRateLimitedError);
 
       expect(getSpy).not.toHaveBeenCalled();
@@ -378,7 +378,7 @@ describe('GithubService', () => {
 
       const result = await service.fetchGithubPage(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1,
       );
 
@@ -398,7 +398,7 @@ describe('GithubService', () => {
         .mockReturnValue(throwError(() => error500));
 
       await expect(
-        service.fetchGithubPage('typescript', '2024-01-01', 1),
+        service.fetchGithubPage('typescript', '2026-01-01', 1),
       ).rejects.toThrow(GithubUnavailableError);
     });
 
@@ -422,7 +422,7 @@ describe('GithubService', () => {
         .mockReturnValue(throwError(() => error429));
 
       await expect(
-        service.fetchGithubPage('typescript', '2024-01-01', 1),
+        service.fetchGithubPage('typescript', '2026-01-01', 1),
       ).rejects.toThrow(GithubRateLimitedError);
 
       // Second call: fail fast but stale cache exists
@@ -434,7 +434,7 @@ describe('GithubService', () => {
 
       const result = await service.fetchGithubPage(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         2,
       );
 

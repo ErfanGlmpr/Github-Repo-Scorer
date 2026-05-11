@@ -72,14 +72,14 @@ describe('RepositoriesService', () => {
 
       const result = await service.findRepositories(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1,
         20,
       );
 
       expect(githubService.fetchGithubPage).toHaveBeenCalledWith(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1, // github page
       );
       expect(result.items).toHaveLength(20);
@@ -91,7 +91,7 @@ describe('RepositoriesService', () => {
 
       const result = await service.findRepositories(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         3,
         20,
       );
@@ -99,7 +99,7 @@ describe('RepositoriesService', () => {
       // Client offset = (3-1)*20 = 40, GitHub page = floor(40/100)+1 = 1
       expect(githubService.fetchGithubPage).toHaveBeenCalledWith(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1,
       );
       expect(result.items).toHaveLength(20);
@@ -111,7 +111,7 @@ describe('RepositoriesService', () => {
 
       const result = await service.findRepositories(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         6,
         20,
       );
@@ -119,7 +119,7 @@ describe('RepositoriesService', () => {
       // Client offset = (6-1)*20 = 100, GitHub page = floor(100/100)+1 = 2
       expect(githubService.fetchGithubPage).toHaveBeenCalledWith(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         2,
       );
       expect(result.items).toHaveLength(20);
@@ -139,7 +139,7 @@ describe('RepositoriesService', () => {
       // Let's use a case that actually spans: page=2&limit=80 → offset=80, end=160
       const result = await service.findRepositories(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         2,
         80,
       );
@@ -148,12 +148,12 @@ describe('RepositoriesService', () => {
       expect(githubService.fetchGithubPage).toHaveBeenCalledTimes(2);
       expect(githubService.fetchGithubPage).toHaveBeenCalledWith(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1,
       );
       expect(githubService.fetchGithubPage).toHaveBeenCalledWith(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         2,
       );
       expect(result.items).toHaveLength(80);
@@ -166,11 +166,11 @@ describe('RepositoriesService', () => {
     it('should reject page requests beyond accessible 1000 results', async () => {
       // page=51&limit=20 → offset=1000 → should reject
       await expect(
-        service.findRepositories('typescript', '2024-01-01', 51, 20),
+        service.findRepositories('typescript', '2026-01-01', 51, 20),
       ).rejects.toThrow(BadRequestException);
 
       await expect(
-        service.findRepositories('typescript', '2024-01-01', 51, 20),
+        service.findRepositories('typescript', '2026-01-01', 51, 20),
       ).rejects.toThrow(/1,000 results/);
     });
 
@@ -182,7 +182,7 @@ describe('RepositoriesService', () => {
 
       const result = await service.findRepositories(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1,
         20,
       );
@@ -200,7 +200,7 @@ describe('RepositoriesService', () => {
 
       const result = await service.findRepositories(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1,
         20,
       );
@@ -214,29 +214,34 @@ describe('RepositoriesService', () => {
   // ─── Ordering ─────────────────────────────────────────────
 
   describe('ordering', () => {
-    it('should return results sorted by score descending with stable tie-breaker', async () => {
+    it('should return results in the order provided by GitHub', async () => {
       const items = makeItems(5);
+      // Let's create an arbitrary score difference to ensure it doesn't sort by score
+      items[0].stargazers_count = 10;
+      items[1].stargazers_count = 1000;
+      items[2].stargazers_count = 50;
+      items[3].stargazers_count = 5000;
+      items[4].stargazers_count = 5;
       githubService.fetchGithubPage.mockResolvedValue(makePageResult(items));
 
       const result = await service.findRepositories(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1,
         5,
       );
 
-      for (let i = 1; i < result.items.length; i++) {
-        const prev = result.items[i - 1];
-        const curr = result.items[i];
-        if (prev.score === curr.score) {
-          // Tie-breaker: fullName ascending
-          expect(
-            prev.fullName.localeCompare(curr.fullName),
-          ).toBeLessThanOrEqual(0);
-        } else {
-          expect(prev.score).toBeGreaterThan(curr.score);
-        }
-      }
+      // Verify the returned order matches the input items order exactly,
+      // not the score order.
+      expect(result.items[0].name).toBe('repo-1');
+      expect(result.items[1].name).toBe('repo-2');
+      expect(result.items[2].name).toBe('repo-3');
+      expect(result.items[3].name).toBe('repo-4');
+      expect(result.items[4].name).toBe('repo-5');
+
+      // But scores are still computed
+      expect(result.items[1].score).toBeGreaterThan(result.items[0].score);
+      expect(result.items[3].score).toBeGreaterThan(result.items[2].score);
     });
   });
 
@@ -251,7 +256,7 @@ describe('RepositoriesService', () => {
 
       const result = await service.findRepositories(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1,
         20,
       );
@@ -290,7 +295,7 @@ describe('RepositoriesService', () => {
 
       const result = await service.findRepositories(
         'typescript',
-        '2024-01-01',
+        '2026-01-01',
         1,
         20,
       );
@@ -305,7 +310,7 @@ describe('RepositoriesService', () => {
       );
 
       await expect(
-        service.findRepositories('typescript', '2024-01-01', 1, 20),
+        service.findRepositories('typescript', '2026-01-01', 1, 20),
       ).rejects.toThrow('GitHub API failed');
     });
   });

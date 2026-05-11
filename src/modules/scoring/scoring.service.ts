@@ -44,8 +44,7 @@ export class ScoringService {
   }
 
   /**
-   * Score a list of domain repositories, returning enriched results
-   * sorted descending by score.
+   * Score a list of domain repositories, returning enriched results.
    *
    * Individual scoring failures are caught, logged, and skipped
    * so one bad record cannot break the entire response.
@@ -77,7 +76,7 @@ export class ScoringService {
       }
     }
 
-    return results.sort((a, b) => b.score - a.score);
+    return results;
   }
 }
 

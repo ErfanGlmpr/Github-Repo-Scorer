@@ -208,7 +208,7 @@ export class GithubService {
   ): string {
     const normalizedLang = language.trim().toLowerCase();
     const normalizedDate = new Date(createdAfter).toISOString().split('T')[0];
-    return `github:repos:v1:lang=${normalizedLang}:created=>${normalizedDate}:sort=stars:order=desc:ghPage=${githubPage}:perPage=100`;
+    return `github:repos:v2:lang=${normalizedLang}:created=>${normalizedDate}:ghPage=${githubPage}:perPage=100`;
   }
 
   // ─── Query builder ─────────────────────────────────────────
@@ -279,8 +279,6 @@ export class GithubService {
       timeout: 10_000,
       params: {
         q: query,
-        sort: 'stars',
-        order: 'desc',
         page: githubPage,
         per_page: 100,
       },

@@ -53,7 +53,7 @@ describe('Repositories API (e2e)', () => {
   describe('GET /repositories', () => {
     it('should return 400 when language is missing', () => {
       return request(app.getHttpServer())
-        .get('/repositories?created_after=2024-01-01')
+        .get('/repositories?created_after=2026-01-01')
         .expect(400);
     });
 
@@ -69,10 +69,25 @@ describe('Repositories API (e2e)', () => {
         .expect(400);
     });
 
+    it('should return 400 when limit is 101', () => {
+      return request(app.getHttpServer())
+        .get(
+          '/repositories?language=typescript&created_after=2026-01-01&limit=101',
+        )
+        .expect(400)
+        .expect((res) => {
+          expect(res.body).toMatchObject({
+            statusCode: 400,
+            message: ['limit must not be greater than 100'],
+            error: 'Bad Request',
+          });
+        });
+    });
+
     it('should return 400 when limit exceeds 100', () => {
       return request(app.getHttpServer())
         .get(
-          '/repositories?language=typescript&created_after=2024-01-01&limit=200',
+          '/repositories?language=typescript&created_after=2026-01-01&limit=200',
         )
         .expect(400);
     });
@@ -80,7 +95,23 @@ describe('Repositories API (e2e)', () => {
     it('should return 400 when page is 0', () => {
       return request(app.getHttpServer())
         .get(
-          '/repositories?language=typescript&created_after=2024-01-01&page=0',
+          '/repositories?language=typescript&created_after=2026-01-01&page=0',
+        )
+        .expect(400);
+    });
+
+    it('should return 400 when limit is 0', () => {
+      return request(app.getHttpServer())
+        .get(
+          '/repositories?language=typescript&created_after=2026-01-01&limit=0',
+        )
+        .expect(400);
+    });
+
+    it('should return 400 when limit is non-numeric', () => {
+      return request(app.getHttpServer())
+        .get(
+          '/repositories?language=typescript&created_after=2026-01-01&limit=abc',
         )
         .expect(400);
     });
@@ -88,7 +119,7 @@ describe('Repositories API (e2e)', () => {
     it('should return 200 with items and meta for a valid request', async () => {
       const response = await request(app.getHttpServer())
         .get(
-          '/repositories?language=typescript&created_after=2024-01-01&limit=5',
+          '/repositories?language=typescript&created_after=2026-01-01&limit=5',
         )
         .expect(200);
 
@@ -127,7 +158,7 @@ describe('Repositories API (e2e)', () => {
     it('should return 400 when pagination exceeds 1000-result cap', () => {
       return request(app.getHttpServer())
         .get(
-          '/repositories?language=typescript&created_after=2024-01-01&page=51&limit=20',
+          '/repositories?language=typescript&created_after=2026-01-01&page=51&limit=20',
         )
         .expect(400);
     });

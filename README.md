@@ -34,42 +34,51 @@ To ensure production-scale reliability and efficiency, several improvements have
 - If a client request spans two GitHub pages, both required GitHub pages are fetched and merged.
 - **Why:** This significantly reduces GitHub API calls and allows multiple client `page`/`limit` combinations to reuse the same upstream GitHub response.
 
-### B. Redis Distributed Cache
+### B. Pagination and Scoring Order
+GitHub Search is the canonical source of result ordering. The API does not reorder paginated results by popularity score in the default search endpoint because doing so on partially fetched GitHub pages would make pagination inconsistent.
+
+The service preserves GitHub's default best-match ordering, slices results according to client pagination, and then computes a popularity score for each returned repository.
+
+The score is returned as metadata for each repository, but it is not used as the default pagination order.
+
+A globally score-sorted result set would require fetching, scoring, and sorting the full accessible GitHub result window, up to GitHub's 1,000-result cap. This is intentionally avoided in the default path to keep the API scalable and predictable.
+
+### C. Redis Distributed Cache
 - GitHub search pages are cached in Redis using a cache-aside pattern.
 - Cache keys are based on the normalized GitHub query (language, date), GitHub page number, and `per_page=100`.
 - Different client limits can reuse the same cached GitHub page.
 - Using Redis allows multiple application instances to share the same cache, enabling horizontal scaling.
 - Implements a fresh TTL with a stale-cache fallback mechanism.
 
-### C. Request Coalescing
+### D. Request Coalescing
 - Concurrent identical cache misses are coalesced.
 - Only one GitHub request is sent for the same uncached GitHub page.
 - Other concurrent requests await the same in-flight promise.
 - This actively prevents cache stampedes under high load.
 
-### D. GitHub Global Rate Limiter
+### E. GitHub Global Rate Limiter
 - All outbound GitHub Search calls go through a protected wrapper.
 - The limiter uses a safe budget below GitHub’s authenticated 30 requests/minute limit.
 - Concurrency is capped.
 - This protects the shared GitHub token from being exhausted across the application.
 
-### E. Retry and Rate-Limit Handling
+### F. Retry and Rate-Limit Handling
 - The app automatically retries transient GitHub failures.
 - Retries handle `403` (secondary rate limits), `429` (too many requests), `5xx` (server errors), and network errors.
 - The retry logic respects GitHub's `retry-after` and `x-ratelimit-reset` headers.
 - Bad client requests (e.g., `400`, `422`) are not retried.
 
-### F. Stale Cache Fallback
+### G. Stale Cache Fallback
 - If GitHub is unavailable or rate-limited (and retries fail), the service can return stale cached results when available.
 - Response metadata explicitly indicates when stale data is returned (`"stale": true`).
 - If no cache is available at all, the API returns a controlled error.
 
-### G. Client-level Rate Limiting
+### H. Client-level Rate Limiting
 - The API applies its own client/IP-level rate limiting.
 - This is separate from the global GitHub limiter.
 - This prevents a single aggressive client from consuming the shared GitHub API quota.
 
-### H. 1,000-Result Cap Handling
+### I. 1,000-Result Cap Handling
 - The service explicitly reports pagination state via response metadata:
   - `totalCount`
   - `accessibleCount`
@@ -97,7 +106,7 @@ The application follows a layered architecture to cleanly separate concerns:
 - `language` (required string): GitHub repository language filter.
 - `created_after` (required ISO date): Filters repositories created after this date.
 - `page` (optional number): Client-facing page number (default: 1).
-- `limit` (optional number): Client-facing page size (1–100, default: 20).
+- `limit` (optional number): Client-facing page size. `limit` must be between 1 and 100. Requests with `limit > 100` return `400 Bad Request`. (default: 20).
 
 #### Example Request
 ```bash
@@ -116,7 +125,7 @@ curl "http://localhost:3000/repositories?language=typescript&created_after=2026-
         "url": "https://github.com/openclaw/openclaw",
         "stars": 370730,
         "forks": 76613,
-        "createdAt": "2025-11-24T10:16:47.000Z",
+        "createdAt": "2026-01-01T10:16:47.000Z",
         "updatedAt": "2026-05-11T10:28:09.000Z",
         "score": 9.99
       }
@@ -125,7 +134,8 @@ curl "http://localhost:3000/repositories?language=typescript&created_after=2026-
       "totalCount": 7926852,
       "accessibleCount": 1000,
       "resultLimitReached": true,
-      "incompleteResults": false
+      "incompleteResults": false,
+      "orderBy": "github_best_match"
     }
   },
   "timestamp": "2026-05-11T10:28:14.869Z"
@@ -154,6 +164,8 @@ REDIS_DB=0
 
 **Prerequisites:** Node.js (v18+) and Docker.
 
+### A. Manual Setup
+
 ```bash
 # 1. Install dependencies
 npm install
@@ -161,11 +173,33 @@ npm install
 # 2. Configure environment variables
 cp .env.example .env
 
-# 3. Start Redis
+# 3. Start Redis (required for caching)
 docker compose up -d redis
 
-# 4. Run the application in development mode
+# 4. Run the application
+# Development mode (with hot-reload)
 npm run start:dev
+
+# Production mode
+npm run start:prod
+```
+
+### B. Docker Setup (Fully Containerized)
+
+You can run the entire stack (API + Redis) using Docker:
+
+```bash
+# Start all services
+docker compose up -d --build
+
+# Check status
+docker compose ps
+
+# View real-time logs
+docker compose logs -f
+
+# View logs for a specific service (e.g., the API)
+docker compose logs -f api
 ```
 
 The API will be available at `http://localhost:3000`. Interactive Swagger docs are at `/api/docs`.

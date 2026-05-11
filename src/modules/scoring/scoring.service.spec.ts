@@ -169,7 +169,7 @@ describe('ScoringService', () => {
   // ─── scoreRepositories ────────────────────────────────────────
 
   describe('scoreRepositories', () => {
-    it('should return results sorted by score descending', () => {
+    it('should preserve the input order of results', () => {
       const repos = [
         makeRepo({ name: 'low', stars: 1, forks: 1 }),
         makeRepo({ name: 'high', stars: 10000, forks: 5000 }),
@@ -178,13 +178,10 @@ describe('ScoringService', () => {
 
       const scored = service.scoreRepositories(repos, NOW);
 
-      expect(scored[0].name).toBe('high');
-      expect(scored[1].name).toBe('mid');
-      expect(scored[2].name).toBe('low');
-
-      for (let i = 1; i < scored.length; i++) {
-        expect(scored[i - 1].score).toBeGreaterThanOrEqual(scored[i].score);
-      }
+      // Order should exactly match the input
+      expect(scored[0].name).toBe('low');
+      expect(scored[1].name).toBe('high');
+      expect(scored[2].name).toBe('mid');
     });
 
     it('should include all expected fields in the response', () => {
