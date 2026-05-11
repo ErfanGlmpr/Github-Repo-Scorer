@@ -1,26 +1,17 @@
-import {
-  Controller,
-  Get,
-  Query,
-  UseInterceptors,
-  Logger,
-} from '@nestjs/common';
+import { Controller, Get, Query, Logger } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { RepositoriesService } from './repositories.service';
 import { SearchRepositoriesDto } from './dto/search-repositories.dto';
-import { RepositoryResponseDto } from './dto/repository-response.dto';
+import { SearchResponseDto } from './dto/search-response.dto';
 
 @ApiTags('Repositories')
 @Controller('repositories')
-@UseInterceptors(CacheInterceptor)
 export class RepositoriesController {
   private readonly logger = new Logger(RepositoriesController.name);
 
   constructor(private readonly repositoriesService: RepositoriesService) {}
 
   @Get()
-  @CacheTTL(300_000) // 5 minutes (cache-manager v7 uses milliseconds)
   @ApiOperation({
     summary: 'Search GitHub repositories by language',
     description:
@@ -29,9 +20,8 @@ export class RepositoriesController {
   })
   @ApiResponse({
     status: 200,
-    description:
-      'List of scored repositories sorted by popularity (descending)',
-    type: [RepositoryResponseDto],
+    description: 'Scored repositories with pagination metadata',
+    type: SearchResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Invalid query parameters' })
   @ApiResponse({
@@ -42,19 +32,19 @@ export class RepositoriesController {
   @ApiResponse({ status: 503, description: 'GitHub API unreachable' })
   async searchRepositories(
     @Query() query: SearchRepositoriesDto,
-  ): Promise<RepositoryResponseDto[]> {
+  ): Promise<SearchResponseDto> {
     this.logger.log('Incoming search repositories request', {
       language: query.language,
       createdAfter: query.created_after,
       page: query.page,
       limit: query.limit,
     });
-    const results = await this.repositoriesService.findRepositories(
+
+    return this.repositoriesService.findRepositories(
       query.language,
       query.created_after,
       query.page,
       query.limit,
     );
-    return results.sort((a, b) => b.score - a.score);
   }
 }

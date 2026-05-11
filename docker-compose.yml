@@ -1,4 +1,10 @@
 services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: always
+
   api:
     build: .
     container_name: github-repo-scorer
@@ -6,4 +12,8 @@ services:
       - "3000:3000"
     env_file:
       - .env
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
     restart: always
