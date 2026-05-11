@@ -51,6 +51,12 @@ export class SearchMetaDto {
     description: 'Human-readable warning when serving stale data',
   })
   warning?: string;
+
+  @ApiPropertyOptional({
+    example: 'github_best_match',
+    description: 'The ordering strategy used for the results',
+  })
+  orderBy?: string;
 }
 
 /**
@@ -59,7 +65,7 @@ export class SearchMetaDto {
 export class SearchResponseDto {
   @ApiProperty({
     type: [RepositoryResponseDto],
-    description: 'Scored and sorted repositories for the requested page',
+    description: 'Scored repositories for the requested page',
   })
   items!: RepositoryResponseDto[];
 

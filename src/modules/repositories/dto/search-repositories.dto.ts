@@ -24,7 +24,7 @@ export class SearchRepositoriesDto {
 
   @ApiProperty({
     description: 'Return only repositories created after this ISO 8601 date',
-    example: '2024-01-01',
+    example: '2026-01-01',
   })
   @IsISO8601(
     {},
