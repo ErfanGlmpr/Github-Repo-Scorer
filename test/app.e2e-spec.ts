@@ -6,14 +6,44 @@ import { AppModule } from '../src/app.module';
 import { TransformInterceptor } from '../src/common/interceptors/transform.interceptor';
 import { LoggingInterceptor } from '../src/common/interceptors/logging.interceptor';
 import { GlobalExceptionFilter } from '../src/common/filters/http-exception.filter';
+import { GithubService } from '../src/modules/github/github.service';
 
 describe('Repositories API (e2e)', () => {
   let app: INestApplication<App>;
 
   beforeAll(async () => {
+    const mockGithubService = {
+      fetchGithubPage: jest.fn().mockResolvedValue({
+        data: {
+          total_count: 5,
+          incomplete_results: false,
+          items: [
+            {
+              id: 1,
+              name: 'repo1',
+              full_name: 'user/repo1',
+              html_url: 'https://github.com/user/repo1',
+              description: 'A mock repo',
+              stargazers_count: 100,
+              forks_count: 10,
+              created_at: '2026-01-02T00:00:00Z',
+              updated_at: '2026-01-02T00:00:00Z',
+              owner: {
+                login: 'user',
+                avatar_url: 'https://avatar.url',
+              },
+            },
+          ],
+        },
+      }),
+    };
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(GithubService)
+      .useValue(mockGithubService)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(
@@ -42,9 +72,10 @@ describe('Repositories API (e2e)', () => {
         .expect(200)
         .expect((res) => {
           const body = res.body as {
-            data: { status: string; timestamp: string };
+            data: { status: string; redis: string; timestamp: string };
           };
           expect(body.data.status).toBe('ok');
+          expect(['connected', 'unavailable']).toContain(body.data.redis);
           expect(body.data.timestamp).toBeDefined();
         });
     });
